@@ -7,9 +7,9 @@ bl_info = {
 }
 
 '''
-    [] Timing
+    [X] Timing
     [X] Save original samples
-    [] Change samples to one
+    [X] Change samples to one
     [] Render current frame
     [] Label telling them to render from most complicated frame
 '''
@@ -17,6 +17,10 @@ bl_info = {
 result = "N/A"
 sample_num = 0
 original_output = ""
+start_time = 0
+end_time = 0
+start_time2 = 0
+end_time2 = 0
    
 class EvalOp(bpy.types.Operator):
     """Eval"""
@@ -28,12 +32,35 @@ class EvalOp(bpy.types.Operator):
         return context.active_object is not None
         
     def execute(self, context):
+        ''' GPU RENDER TEST '''
+        start_time = dt.datetime.now()
         sample_num = bpy.data.scenes["Scene"].cycles.samples
         bpy.data.scenes["Scene"].cycles.samples = 1
         original_output = bpy.data.scenes["Scene"].render.filepath
-        bpy.data.scenes["Scene"].render.filepath = "\\southw-sfps-01.business.mpls.k12.mn.us\\Students_M-Z\\hton1801\\Desktop\\THISONE.png"
+        bpy.data.scenes["Scene"].render.filepath = "FIGURE OUT LATER"
         bpy.ops.render.render(write_still=True)
         bpy.data.scenes["Scene"].render.filepath = original_output
+        bpy.context.user_preferences.system.compute_device = "CUDA_0"
+        print(bpy.context.user_preferences.system.compute_device)
+        bpy.data.scenes["Scene"].cycles.samples = sample_num
+        end_time = dt.datetime.now()
+        
+        ''' CPU RENDER TEST '''
+        start_time2 = dt.datetime.now()
+        sample_num = bpy.data.scenes["Scene"].cycles.samples
+        bpy.data.scenes["Scene"].cycles.samples = 1
+        original_output = bpy.data.scenes["Scene"].render.filepath
+        bpy.data.scenes["Scene"].render.filepath = "FIGURE OUT LATER"
+        bpy.ops.render.render(write_still=True)
+        bpy.data.scenes["Scene"].render.filepath = original_output
+        bpy.context.user_preferences.system.compute_device = "CPU"
+        print(bpy.context.user_preferences.system.compute_device)
+        bpy.data.scenes["Scene"].cycles.samples = sample_num
+        end_time2 = dt.datetime.now()
+        
+        print(str(endtime - start_time))
+        print(str(endtime2 - start_time2))
+        
         return {'FINISHED'}
 
 class Properties(bpy.types.PropertyGroup):
