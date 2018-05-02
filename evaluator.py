@@ -10,17 +10,19 @@ bl_info = {
     [X] Timing
     [X] Save original samples
     [X] Change samples to one
-    [] Render current frame
+    [X] Render current frame
+    [] Fix directory issue
     [] Label telling them to render from most complicated frame
 '''
 
-result = "N/A"
+result = ""
 sample_num = 0
 original_output = ""
 start_time = 0
 end_time = 0
 start_time2 = 0
 end_time2 = 0
+done = False
    
 class EvalOp(bpy.types.Operator):
     """Eval"""
@@ -32,15 +34,16 @@ class EvalOp(bpy.types.Operator):
         return context.active_object is not None
         
     def execute(self, context):
+        result = "CHANGED"
         ''' GPU RENDER TEST '''
         start_time = dt.datetime.now()
         sample_num = bpy.data.scenes["Scene"].cycles.samples
         bpy.data.scenes["Scene"].cycles.samples = 1
         original_output = bpy.data.scenes["Scene"].render.filepath
-        bpy.data.scenes["Scene"].render.filepath = "FIGURE OUT LATER"
+        bpy.data.scenes["Scene"].render.filepath = "\\southw-sfps-01.business.mpls.k12.mn.us\Students_M-Z\hton1801\Desktop\gpu.png"
         bpy.ops.render.render(write_still=True)
         bpy.data.scenes["Scene"].render.filepath = original_output
-        bpy.context.user_preferences.system.compute_device = "CUDA_0"
+        bpy.context.user_preferences.system.compute_device_type = 'CUDA'
         print(bpy.context.user_preferences.system.compute_device)
         bpy.data.scenes["Scene"].cycles.samples = sample_num
         end_time = dt.datetime.now()
@@ -50,16 +53,31 @@ class EvalOp(bpy.types.Operator):
         sample_num = bpy.data.scenes["Scene"].cycles.samples
         bpy.data.scenes["Scene"].cycles.samples = 1
         original_output = bpy.data.scenes["Scene"].render.filepath
-        bpy.data.scenes["Scene"].render.filepath = "FIGURE OUT LATER"
+        bpy.data.scenes["Scene"].render.filepath = "\\southw-sfps-01.business.mpls.k12.mn.us\Students_M-Z\hton1801\Desktop\cpu.png"
         bpy.ops.render.render(write_still=True)
         bpy.data.scenes["Scene"].render.filepath = original_output
-        bpy.context.user_preferences.system.compute_device = "CPU"
+        bpy.context.user_preferences.system.compute_device_type = 'NONE'
+        bpy.context.user_preferences.system.compute_device = 'CPU'
         print(bpy.context.user_preferences.system.compute_device)
         bpy.data.scenes["Scene"].cycles.samples = sample_num
         end_time2 = dt.datetime.now()
         
-        print(str(endtime - start_time))
-        print(str(endtime2 - start_time2))
+        print("GPU")
+        print(str(end_time - start_time))
+        print("CPU")
+        print(str(end_time2 - start_time2))
+        
+        gpu_time = end_time - start_time
+        cpu_time = end_time2 - start_time2
+        
+        if (gpu_time > cpu_time):
+            print("ITS C")
+            result = "CPU"
+        else:
+            print("ITS G")
+            result = "GPU"
+            
+        done = True
         
         return {'FINISHED'}
 
@@ -87,8 +105,9 @@ class ActiveObject(bpy.types.Panel):
         mytool = scene.my_tool
         obj = context.object
         
-        row = layout.row()
-        row.label(text=("Use: " + result))
+        if done:
+            row = layout.row()
+            row.label(text=("Use: " + result))
         #layout.prop(mytool, "my_enum")
         row = layout.row()
         row.operator("object.simple_operator", "Evaluate")
