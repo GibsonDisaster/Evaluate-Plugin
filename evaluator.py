@@ -15,7 +15,6 @@ bl_info = {
     [] Label telling them to render from most complicated frame
 '''
 
-result = ""
 sample_num = 0
 original_output = ""
 start_time = 0
@@ -72,10 +71,10 @@ class EvalOp(bpy.types.Operator):
         
         if (gpu_time > cpu_time):
             print("ITS C")
-            result = "CPU"
+            bpy.types.Scene.choice = "CPU"
         else:
             print("ITS G")
-            result = "GPU"
+            bpy.types.Scene.choice = "GPU"
             
         done = True
         
@@ -104,10 +103,10 @@ class ActiveObject(bpy.types.Panel):
         scene = context.scene
         mytool = scene.my_tool
         obj = context.object
+        result = bpy.types.Scene.choice
         
-        if done:
-            row = layout.row()
-            row.label(text=("Use: " + result))
+        row = layout.row()
+        row.label(text=("Use: " + result))
         #layout.prop(mytool, "my_enum")
         row = layout.row()
         row.operator("object.simple_operator", "Evaluate")
@@ -117,6 +116,7 @@ def register():
     bpy.utils.register_class(Properties)
     bpy.utils.register_class(EvalOp)
     bpy.types.Scene.my_tool = bpy.props.PointerProperty(type=Properties)
+    bpy.types.Scene.choice = "RUN TEST"
 
 def unregister():
     bpy.utils.unregister_class(ActiveObject)
